@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101d29">
+<meta name="description" content="이상치를 터치하고 평균을 지키는 15초 모바일 게임. 인터넷 연결 없이도 플레이할 수 있어요.">
+<title>평균을 지켜라 · Clean the Outliers</title>
+<style>
+:root{color-scheme:dark;--bg:#101d29;--panel:#1c2d3c;--ink:#edf6f8;--muted:#a4bac7;--mint:#a6f3cc;--red:#ff9d91;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overscroll-behavior:none}body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);overflow:hidden;-webkit-tap-highlight-color:transparent}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible,[role=button]:focus-visible{outline:3px solid #00a4cc;outline-offset:3px}button:disabled{cursor:default}button{border:0}button:active:not(:disabled){transform:scale(.97)}[hidden]{display:none!important}
+#app{width:100%;max-width:1000px;height:100%;height:100dvh;margin:auto;padding:calc(10px + var(--safe-t)) max(12px,env(safe-area-inset-right,0px)) calc(8px + var(--safe-b)) max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
+.header{display:flex;align-items:center;gap:10px;min-height:44px}.brand{font-weight:850;letter-spacing:-.7px;font-size:18px;flex:1}.brand small{display:block;font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-top:3px}.stage-chip{font-size:11px;color:var(--mint);font-weight:800;white-space:nowrap}.icon-button{width:44px;height:44px;border-radius:14px;background:var(--panel);font-size:19px}.layout{display:flex;flex-direction:column;flex:1;min-height:0;gap:10px}.hud{display:flex;flex-direction:column;gap:9px}.stats{background:var(--panel);border-radius:20px;padding:13px 16px}.stat-row{display:flex;align-items:center;justify-content:space-between}.eyebrow{font-size:10px;letter-spacing:1.2px;color:var(--muted);font-weight:800}.average{font-size:31px;font-weight:850;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;line-height:1.2}.average.bad{color:var(--red)}.average small{font-size:12px;color:var(--muted);letter-spacing:0;margin-left:5px}.time{text-align:right}.time strong{font-size:26px;font-variant-numeric:tabular-nums}.time .urgent{color:var(--red)}.goal{font-size:11px;color:var(--mint);margin-top:3px}.meter{height:13px;background:#0c1822;border-radius:10px;position:relative;margin:11px 0 5px;overflow:hidden}.target{position:absolute;height:100%;background:#a6f3cc40;border-inline:2px solid var(--mint)}.meter-fill{height:100%;background:var(--mint);opacity:.55;max-width:100%;transition:width .12s linear}.needle{position:absolute;top:0;height:100%;width:3px;background:white;transform:translateX(-50%);transition:left .12s linear}.meter-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:9px}.inventory{display:flex;gap:7px;align-items:center;min-height:48px}.item{width:48px;height:48px;border-radius:15px;background:var(--panel);border:1px solid #536371;font-size:25px;position:relative;flex:none}.item:disabled{border-style:dashed;color:#6e8392}.item-name{font-size:11px;color:var(--muted);line-height:1.5;flex:1;min-width:0}.item-name b{color:var(--ink);font-weight:600}.effect{color:var(--mint);font-size:11px;min-height:14px}.field-wrap{position:relative;flex:1;min-height:100px;display:flex;overflow:hidden;border-radius:24px;background:#edf2ee;border:1px solid #fff2}.field{width:100%;height:100%;position:relative;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;background-image:radial-gradient(#83999135 1px,transparent 1px);background-size:20px 20px;isolation:isolate}.field-tag{position:absolute;top:11px;left:15px;font-size:9px;letter-spacing:1.4px;font-weight:850;color:#60776d;pointer-events:none;z-index:1}.footer{font-size:10px;color:var(--muted);text-align:center;line-height:1.5;min-height:15px}.object{position:absolute;left:0;top:0;display:grid;place-items:center;line-height:1;cursor:pointer;touch-action:none;contain:layout style;user-select:none;-webkit-user-select:none;border-radius:50%;color:#172e25}.glyph{display:block;pointer-events:none;line-height:1.1;filter:drop-shadow(0 2px 2px #16372c20)}.object.pepper .glyph{filter:drop-shadow(0 0 7px #ff684a90)}.object.ice .glyph{filter:drop-shadow(0 0 7px #00bdeba0)}.object.mega .glyph{filter:drop-shadow(0 0 9px #f53c48b0)}.object.frozen{filter:grayscale(1);opacity:.48}.countdown{position:absolute;right:0;top:0;background:#192b36;color:white;font-size:10px;padding:3px 5px;border-radius:7px;border:1px solid #de943c;pointer-events:none;min-width:31px;text-align:center}.hits{position:absolute;bottom:0;font-size:9px;letter-spacing:2px;color:#075a77;pointer-events:none}.zone{position:absolute;left:50%;top:50%;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);z-index:-1}.ice .zone{background:#00a8ce10;border:1px dashed #009ed05c}.bomb .zone.inner{border:1px solid #cb580052;background:#ffb34b0c}.bomb .zone.outer{border:1px dashed #b86d0030}.object.held{z-index:80!important;filter:drop-shadow(0 5px 6px #0004)}.fx{position:absolute;border-radius:50%;pointer-events:none;z-index:90;border:3px solid #f29237;background:#ffa31d35;animation:pop .48s ease-out forwards}.fx.gift{border-color:#dfbc44;background:#ffdb3750}.gift-box{position:absolute;font-size:35px;pointer-events:none;z-index:85;line-height:1}.toast{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);background:#142b25ed;color:white;padding:9px 14px;border-radius:14px;font-size:12px;z-index:100;max-width:90%;text-align:center;pointer-events:none;white-space:pre-line}.overlay{position:fixed;inset:0;background:#101d29eb;z-index:150;display:flex;align-items:center;justify-content:center;padding:calc(16px + var(--safe-t)) max(18px,env(safe-area-inset-left,0px)) calc(16px + var(--safe-b));overflow:auto;backdrop-filter:blur(8px)}.card{width:100%;max-width:420px;margin:auto;background:#192b39;border:1px solid #adc8d321;border-radius:28px;padding:27px 24px;box-shadow:0 25px 70px #0003}.splash-mark{font-size:45px;margin-bottom:14px}.card h1{font-size:36px;line-height:1.15;letter-spacing:-2px;margin:10px 0 12px}.card h2{font-size:27px;letter-spacing:-1px;margin:10px 0}.card p{color:#b7cbd5;line-height:1.7;font-size:13px;margin:12px 0}.accent{color:var(--mint)}.rules{list-style:none;padding:12px 0 4px;margin:0}.rules li{display:flex;align-items:center;gap:13px;padding:8px 0;font-size:12px;color:#d0dfe5;line-height:1.6}.rules span{font-size:25px;min-width:42px;text-align:center}.primary,.secondary{display:block;width:100%;min-height:49px;border-radius:15px;font-size:14px;font-weight:800;padding:12px;margin-top:10px}.primary{background:var(--mint);color:#173d2c}.secondary{background:#293e4d;color:#e2eef4}.fine{font-size:10px!important;color:#94adbb!important}.result-number{font-size:58px;font-weight:850;letter-spacing:-3px;color:var(--mint);margin-top:18px}.help-body{font-size:12px;line-height:1.75;color:#c7dbe4}.help-body p{font-size:12px}.help-body b{color:var(--mint)}
+@keyframes pop{from{transform:translate(-50%,-50%) scale(.1);opacity:1}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.target{background:#356b55;z-index:1}.needle{z-index:2}
+@media(min-width:480px) and (max-height:600px) and (orientation:landscape){#app{gap:6px;padding-top:calc(6px + var(--safe-t));padding-bottom:calc(6px + var(--safe-b))}.brand small{display:none}.header{min-height:38px}.icon-button{height:38px;width:44px}.layout{flex-direction:row;gap:12px}.hud{width:clamp(168px,27vw,210px);flex:none;justify-content:center}.stats{padding:14px}.inventory{flex-wrap:wrap}.item-name{flex-basis:100%;margin-top:3px}.field-wrap{min-width:0}.footer{text-align:left}.card{padding:20px 24px}.splash-mark{display:none}.card h1{font-size:30px}.rules li{padding:4px 0}}
+@media(max-width:350px),(max-height:610px) and (orientation:portrait){#app{gap:6px}.layout,.hud{gap:6px}.stats{padding:9px 13px;border-radius:16px}.average{font-size:26px}.time strong{font-size:23px}.meter{margin-top:7px}.item{width:44px;height:44px}.inventory{min-height:44px}.brand{font-size:16px}.footer{font-size:9px}.card{padding:22px 18px}.card h1{font-size:31px}}
+@media(min-width:480px) and (max-height:600px) and (orientation:landscape){.header{min-height:44px}.icon-button{height:44px}.item-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;line-height:1.4}.inventory{flex-shrink:0}.stats{padding:10px}.average{font-size:26px}.average small{font-size:10px;margin-left:3px}.time strong{font-size:23px}.stat-row{gap:4px}.effect{font-size:10px}.meter-labels{font-size:8px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app">
+ <header class="header"><div class="brand">평균을 지켜라<small>CLEAN THE OUTLIERS</small></div><div class="stage-chip" id="stageLabel">STAGE 01</div><button class="icon-button" id="helpButton" aria-label="게임 설명">?</button><button class="icon-button" id="pauseButton" aria-label="일시정지" disabled>Ⅱ</button></header>
+ <div class="layout">
+  <section class="hud" aria-label="게임 상태">
+   <div class="stats"><div class="stat-row"><div><div class="eyebrow">현재 평균</div><div class="average" id="average">—<small>AVG</small></div></div><div class="time"><div class="eyebrow">남은 시간</div><strong id="timer">15.0</strong><div class="goal" id="goal">목표 15–35</div></div></div><div class="meter" aria-hidden="true"><div class="target" id="target"></div><div class="meter-fill" id="fill"></div><div class="needle" id="needle"></div></div><div class="meter-labels"><span>0</span><span id="rangeLabel">초록 구간 안으로!</span><span>100+</span></div></div>
+   <div class="inventory"><button class="item" data-slot="0" aria-label="빈 아이템 슬롯" disabled>＋</button><button class="item" data-slot="1" hidden disabled></button><button class="item" data-slot="2" hidden disabled></button><div class="item-name" id="inventoryText"><b>아이템</b><br>선물상자를 기다려요</div></div>
+   <div class="effect" id="effect" aria-live="polite"></div>
+  </section>
+  <div class="field-wrap"><div class="field" id="field" aria-label="플레이 영역: 이상치를 터치해서 제거하세요"><div class="field-tag">TOUCH · CLEAN · BALANCE</div></div><div class="toast" id="toast" role="status" hidden></div></div>
+ </div>
+ <footer class="footer">🌶️·❄️ 이상치를 없애고, 🥦 채소는 지켜요. 빈 곳에서 쓸어도 돼요.</footer>
+</main>
+<section class="overlay" id="startOverlay" role="dialog" aria-modal="true" aria-labelledby="startTitle"><div class="card"><div class="eyebrow accent">15 SECONDS TO FIND YOUR BALANCE</div><div class="splash-mark">🥦 🌶️ ❄️</div><h1 id="startTitle">이상치는 지우고,<br><span class="accent">평균은 지켜요.</span></h1><p>15초가 끝나는 순간, 남은 데이터의 평균이<br><strong class="accent">15–35</strong> 안에 있으면 성공!</p><ul class="rules"><li><span>🌶️</span><div>고추는 <b>100</b>, 얼음은 <b>2</b>.<br>터치해서 평균을 흔드는 이상치를 지워요.</div></li><li><span>🥦</span><div>채소는 <b>20–30</b>. 가능하면 남겨두세요.<br>7단계부터는 목표가 <b>20–30</b>으로 좁아져요.</div></li></ul><button class="primary" id="startButton">스테이지 1 시작 →</button><button class="secondary" id="startHelp">조작법 · 아이템 보기</button><p class="fine">터치 · 마우스 지원 / 세로 · 가로 화면 대응 / 오프라인 실행</p></div></section>
+<section class="overlay" id="pauseOverlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden><div class="card"><div class="eyebrow accent">TAKE A BREATH</div><h2 id="pauseTitle">잠시 쉬어가요</h2><p id="pauseReason">시간과 모든 효과가 멈췄어요.</p><button class="primary" id="resumeButton">계속하기 →</button><button class="secondary" id="restartButton">이 스테이지 다시 시작</button><button class="secondary" id="homeButton">처음 화면으로</button></div></section>
+<section class="overlay" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle" hidden><div class="card"><div class="eyebrow" id="resultStage"></div><h2 id="resultTitle"></h2><div class="result-number" id="finalAverage"></div><p id="resultDescription"></p><button class="primary" id="nextButton"></button><button class="secondary" id="resultHome">처음 화면으로</button></div></section>
+<section class="overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden><div class="card"><div class="eyebrow accent">HOW TO PLAY</div><h2 id="helpTitle">손끝으로 데이터 정제</h2><div class="help-body"><p><b>터치</b>하면 제거, <b>빈 공간에서 쓸기</b>를 시작하면 지나간 대상을 제거해요. 대상을 끌고 놓아도 제거돼요. 폭탄은 끌어서 폭발 위치를 옮길 수 있지만, 손을 놓기 전에 5초가 지나면 터져요.</p><p>❄️ 중심을 누르면 한 번에 제거돼요. 주변을 누르면 3번 필요해요. 5단계부터 얼음 주변의 회색 대상은 터치할 수 없고 폭탄의 일반 타이머도 멈춰요. 연쇄 폭발은 계속 진행돼요.</p><p>💣 5초 후 주변 데이터를 날려요. 가까운 폭탄은 1초 후 연쇄 폭발해요. 💀는 7단계부터 드물게 나오는 값 1000의 이상치예요.</p><p>🎁 매 단계 35% 확률로 한 번 등장해요.<br>⏳ <b>슬로 모션</b> 6초 · 🔮 <b>정렬</b> 6초<br>🌼 <b>채소 7개</b> · 💣 <b>폭발 터치</b> 15초<br>🎰 <b>아이템 슬롯 3개</b><br>빈 슬롯을 누르면 아이템을 쓸 수 없어요. 아이템과 대기열은 다음 단계에도 이어지며, 시간제 효과는 단계마다 초기화돼요.</p><p>데이터가 하나도 없으면 실패해요. 성공 판정은 반올림 전의 평균을 사용해요. 앱 전환 시 자동 일시정지돼요.</p></div><button class="primary" id="closeHelp">알겠어요</button></div></section>
+<script>
+'use strict';
+// All simulation work uses one active-time clock: no stage-leaking intervals/timeouts.
+const $ = id => document.getElementById(id);
+const field = $('field');
+const GLYPHS = {normal:['🍏','🥦','🥑'],pepper:'🌶️',ice:'❄️',bomb:'💣',mega:'💀'};
+const ITEMS = {hourglass:['⏳','슬로 모션'],crystal:['🔮','정렬'],flower:['🌼','채소 추가'],bombItem:['💣','폭발 터치'],slot:['🎰','슬롯 확장']};
+const SIZES = {normal:44,pepper:54,ice:68,bomb:60,mega:76};
+const LAYERS = {normal:5,pepper:10,bomb:20,ice:30,mega:40};
+const MAX_OBJECTS = 64;
+let phase='title',stage=1,remaining=15,min=15,max=35,objects=[],nextId=1;
+let width=1,height=1,radiusUnit=1,clock=0,spawnElapsed=0,giftAt=Infinity,gift=null;
+let slowUntil=0,explosiveUntil=0,slots=[null,null,null],capacity=1,pending=[];
+let pointer=null,fx=[],toastUntil=0,won=false,lastFrame=0,uiElapsed=0,chartDirty=true,helpReturn='title';
+let previousFocus=null;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function average(){return objects.length?objects.reduce((sum,o)=>sum+o.value,0)/objects.length:null;}
+function resetPointer(){
+ if(pointer?.obj){pointer.obj.held=false;pointer.obj.el.classList.remove('held');}
+ if(pointer){try{if(field.hasPointerCapture(pointer.id))field.releasePointerCapture(pointer.id);}catch{}}
+ pointer=null;
+}
+function showOverlay(id,focusId){
+ for(const el of document.querySelectorAll('.overlay'))el.hidden=el.id!==id;
+ $('app').inert=!!id;
+ if(focusId)$(focusId).focus({preventScroll:true});
+}
+function notify(text){$('toast').textContent=text;$('toast').hidden=false;toastUntil=clock+2.4;}
+function setPosition(o){o.el.style.transform=`translate3d(${o.x-o.size/2}px,${o.y-o.size/2}px,0)`;}
+function confine(o){const pad=o.size/2+3;o.x=clamp(o.x,Math.min(pad,width/2),Math.max(width-pad,width/2));o.y=clamp(o.y,Math.min(pad,height/2),Math.max(height-pad,height/2));}
+function resizeField(){
+ const rect=field.getBoundingClientRect();if(!rect.width||!rect.height)return;
+ const oldW=width,oldH=height;width=rect.width;height=rect.height;radiusUnit=Math.min(width,height);
+ for(const o of objects){o.x=o.x/oldW*width;o.y=o.y/oldH*height;confine(o);updateZone(o);setPosition(o);}
+ if(gift){gift.x=gift.x/oldW*width;gift.y=gift.y/oldH*height;}
+ // Effects use field-relative coordinates and expire quickly; remove on rotation.
+ for(const f of fx)f.el.remove();fx=[];
+ resetPointer();
+}
+new ResizeObserver(resizeField).observe(field);
+function updateZone(o){
+ if(o.aura){const d=radiusUnit*.32;o.aura.style.width=d+'px';o.aura.style.height=d+'px';}
+ if(o.ring){const d=radiusUnit*.44;o.ring.style.width=d+'px';o.ring.style.height=d+'px';const p=radiusUnit*.84;o.outer.style.width=p+'px';o.outer.style.height=p+'px';}
+}
+function addObject(isOutlier=false,forcedType=null){
+ if(phase!=='running'||objects.length>=MAX_OBJECTS)return null;
+ let type=forcedType||'normal';
+ if(!forcedType&&isOutlier){if(stage>=7&&Math.random()<.01)type='mega';else if(Math.random()>.5)type=Math.random()<Math.min(.6,.25+stage*.03)?'bomb':'pepper';else type='ice';}
+ const value=type==='normal'?20+Math.floor(Math.random()*11):type==='ice'?2:type==='mega'?1000:100;
+ const size=SIZES[type],el=document.createElement('div');el.className='object '+type;el.style.width=size+'px';el.style.height=size+'px';el.style.zIndex=LAYERS[type];el.setAttribute('role','button');el.tabIndex=0;
+ const glyph=document.createElement('span');glyph.className='glyph';glyph.textContent=type==='normal'?GLYPHS.normal[Math.floor(Math.random()*3)]:GLYPHS[type];glyph.style.fontSize=({normal:31,pepper:39,ice:45,bomb:40,mega:55})[type]+'px';el.append(glyph);
+ el.setAttribute('aria-label',`${type==='normal'?'채소':type==='ice'?'얼음':type==='pepper'?'고추':type==='bomb'?'폭탄':'거대 이상치'}, 값 ${value}. 눌러서 제거`);
+ const o={id:nextId++,type,value,el,glyph,size,x:0,y:0,vx:(Math.random()-.5)*32,vy:(Math.random()-.5)*32,hits:0,bombTime:5,chain:null,frozen:false,held:false,fling:0,organizedUntil:0};
+ // Pick a less crowded point so large invisible hit boxes do not bury neighbors.
+ let best=-Infinity;
+ for(let i=0;i<12;i++){const p={x:size/2+Math.random()*Math.max(0,width-size),y:22+size/2+Math.random()*Math.max(0,height-size-22)};const score=objects.length?Math.min(...objects.map(e=>distance(p,e)-(e.size+size)/2)):0;if(score>best){o.x=p.x;o.y=p.y;best=score;}if(score>8)break;}
+ if(type==='ice'){o.hitsEl=document.createElement('span');o.hitsEl.className='hits';o.hitsEl.textContent='•••';el.append(o.hitsEl);if(stage>=5){o.aura=document.createElement('div');o.aura.className='zone';el.prepend(o.aura);}}
+ if(type==='bomb'){
+  o.timer=document.createElement('span');o.timer.className='countdown';o.timer.textContent='5.0';el.append(o.timer);
+  o.ring=document.createElement('div');o.ring.className='zone inner';o.outer=document.createElement('div');o.outer.className='zone outer';el.prepend(o.outer,o.ring);
+ }
+ el.dataset.id=o.id;objects.push(o);confine(o);updateZone(o);setPosition(o);field.append(el);chartDirty=true;return o;
+}
+function remove(o){if(!o||!objects.includes(o))return;if(pointer?.obj===o)resetPointer();o.el.remove();objects=objects.filter(e=>e!==o);chartDirty=true;}
+function refreshFrozen(){
+ const ice=stage>=5?objects.filter(o=>o.type==='ice'):[];
+ for(const o of objects){const frozen=o.type!=='ice'&&ice.some(s=>distance(o,s)<radiusUnit*.16);if(frozen!==o.frozen){o.frozen=frozen;o.el.classList.toggle('frozen',frozen);o.el.setAttribute('aria-disabled',String(frozen));if(frozen&&pointer?.obj===o)resetPointer();}}
+}
+function hit(o,core=false){
+ if(phase!=='running'||!objects.includes(o))return;
+ refreshFrozen();if(o.frozen)return;
+ if(o.type==='ice'&&!core){o.hits++;o.hitsEl.textContent='•'.repeat(Math.max(0,3-o.hits));o.glyph.style.opacity=String(1-o.hits*.18);if(o.hits<3)return;}
+ remove(o);refreshFrozen();
+}
+function hitIceGroup(o,p,core,visited=new Set()){
+ const nearby=objects.filter(e=>e.type==='ice'&&(e===o||distance(e,p)<=34));
+ for(const e of nearby){if(visited.has(e.id))continue;visited.add(e.id);hit(e,e===o&&core);}
+}
+function burst(p,isGift=false){
+ const el=document.createElement('div');el.className='fx'+(isGift?' gift':'');const d=isGift?100:radiusUnit*.44;el.style.width=d+'px';el.style.height=d+'px';el.style.left=p.x+'px';el.style.top=p.y+'px';field.append(el);fx.push({el,until:clock+.5});
+}
+function fling(o,p,chain){
+ const d=distance(o,p)||1;const angle=d===1?Math.random()*Math.PI*2:Math.atan2(o.y-p.y,o.x-p.x);const power=radiusUnit*(chain?2.2:1.1);
+ o.vx=Math.cos(angle)*power;o.vy=Math.sin(angle)*power;o.fling=chain?1:.65;o.organizedUntil=0;
+ if(pointer?.obj===o)resetPointer();o.held=false;
+}
+function explode(p,source=null){
+ if(phase!=='running')return;burst(p);if(source)remove(source);
+ for(const o of [...objects]){const d=distance(o,p);if(d<=radiusUnit*.22){if(o.type==='bomb'){fling(o,p,true);o.chain=Math.min(o.chain??1,1);}else remove(o);}else if(d<=radiusUnit*.42)fling(o,p,false);}
+ refreshFrozen();
+}
+function renderChart(){
+ const avg=average(),good=avg!==null&&avg>=min&&avg<=max;
+ $('average').innerHTML=(avg===null?'—':avg.toFixed(1))+'<small>AVG</small>';
+ $('average').classList.toggle('bad',!good);const percent=avg===null?0:clamp(avg,0,100);
+ $('fill').style.width=percent+'%';$('fill').style.background=good?'var(--mint)':'var(--red)';$('needle').style.left=clamp(percent,1,99)+'%';
+ $('rangeLabel').textContent=avg===null?'데이터 없음':good?'목표 구간이에요':avg<min?'평균을 올려주세요':'평균을 낮춰주세요';chartDirty=false;
+}
+function renderItems(){
+ for(const el of document.querySelectorAll('[data-slot]')){const i=Number(el.dataset.slot),item=slots[i];el.hidden=i>=capacity;el.disabled=!item||phase!=='running';el.textContent=item?ITEMS[item][0]:'＋';el.setAttribute('aria-label',item?`${ITEMS[item][1]} 사용`:'빈 아이템 슬롯');}
+ const first=slots.slice(0,capacity).find(Boolean);
+ $('inventoryText').replaceChildren();const b=document.createElement('b');b.textContent=pending.length?`대기 아이템 ${pending.length}개`:first?'눌러서 사용':'아이템';$('inventoryText').append(b,document.createElement('br'),document.createTextNode(first?slots.slice(0,capacity).filter(Boolean).map(i=>ITEMS[i][1]).join(' · '):'선물상자를 기다려요'));
+}
+function grantItem(type){const empty=slots.slice(0,capacity).findIndex(x=>!x);if(empty>=0)slots[empty]=type;else pending.push(type);renderItems();notify(`${ITEMS[type][0]} ${ITEMS[type][1]} 획득!`);}
+function randomItem(){const r=Math.random()*100;return r<40?'hourglass':r<65?'crystal':r<85?'flower':r<95?'bombItem':'slot';}
+function organize(){
+ const columns={ice:.16,normal:.5,pepper:.84};
+ for(const type of ['ice','normal','pepper']){const list=objects.filter(o=>o.type===type);list.forEach((o,i)=>{o.x=width*columns[type]+(type==='normal'?((i%3)-1)*Math.min(24,width*.06):0);o.y=45+(height-85)*(i+.5)/Math.max(list.length,1);o.organizedUntil=clock+6;o.fling=0;confine(o);setPosition(o);});}
+ refreshFrozen();notify('🔮 6초 동안 얼음 · 채소 · 고추 정렬');
+}
+function useItem(index){
+ if(phase!=='running'||index>=capacity||!slots[index])return;const type=slots[index];slots[index]=null;
+ if(type==='hourglass'){slowUntil=clock+6;notify('⏳ 6초 동안 시간이 천천히 흘러요');}
+ else if(type==='crystal')organize();
+ else if(type==='flower'){for(let i=0;i<7;i++)addObject();notify('🌼 채소 추가! (화면 최대 64개)');}
+ else if(type==='bombItem'){explosiveUntil=clock+15;notify('💣 15초 동안 터치하는 곳에서 폭발!');}
+ else if(type==='slot'){capacity=3;const pool=['hourglass','crystal','flower','bombItem'];slots=Array.from({length:3},()=>pool[Math.floor(Math.random()*4)]);notify('🎰 아이템 3개 획득!');}
+ // A slot-expansion item fills every slot; never overwrite its reward with pending items.
+ for(let i=0;i<capacity&&pending.length;i++)if(!slots[i])slots[i]=pending.shift();
+ if(capacity===3&&slots.every(x=>!x)&&!pending.length)capacity=1;
+ renderItems();chartDirty=true;
+}
+function startStage(level){
+ resetPointer();phase='running';stage=level;remaining=15;clock=0;spawnElapsed=0;slowUntil=0;explosiveUntil=0;gift=null;fx=[];objects=[];field.querySelectorAll('.object,.fx,.gift-box').forEach(e=>e.remove());
+ min=stage>=7?20:15;max=stage>=7?30:35;giftAt=Math.random()<.35?2+Math.random()*9:Infinity;
+ $('stageLabel').textContent='STAGE '+String(stage).padStart(2,'0');$('goal').textContent=`목표 ${min}–${max}`;$('target').style.left=min+'%';$('target').style.width=(max-min)+'%';
+ $('toast').hidden=true;$('effect').textContent='';$('pauseButton').disabled=false;showOverlay(null);resizeField();
+ for(let i=0;i<15;i++)addObject();renderItems();renderChart();renderTime();lastFrame=performance.now();
+}
+function newRun(){slots=[null,null,null];capacity=1;pending=[];startStage(1);}
+function home(){resetPointer();phase='title';$('pauseButton').disabled=true;showOverlay('startOverlay','startButton');renderItems();}
+function pause(reason='시간과 모든 효과가 멈췄어요.'){
+ if(phase!=='running')return;resetPointer();phase='paused';$('pauseReason').textContent=reason;renderItems();showOverlay('pauseOverlay','resumeButton');
+}
+function resume(){if(phase!=='paused'||!$('helpOverlay').hidden||document.hidden)return;phase='running';lastFrame=performance.now();showOverlay(null);renderItems();}
+function openHelp(){previousFocus=document.activeElement;helpReturn=phase;if(phase==='running'){pause();helpReturn='paused';}showOverlay('helpOverlay','closeHelp');}
+function closeHelp(){if(helpReturn==='paused')showOverlay('pauseOverlay','resumeButton');else if(helpReturn==='result')showOverlay('resultOverlay','nextButton');else showOverlay('startOverlay','startButton');if(previousFocus?.isConnected&&!previousFocus.closest('[hidden]')&&!$('app').inert)previousFocus.focus();}
+function finish(){
+ if(phase!=='running')return;resetPointer();phase='result';remaining=0;const avg=average();won=avg!==null&&avg>=min&&avg<=max;
+ $('resultStage').textContent=`STAGE ${String(stage).padStart(2,'0')} · ${won?'CLEAR':'TRY AGAIN'}`;$('resultTitle').textContent=won?'균형을 찾았어요!':'조금만 더 정제해볼까요?';$('finalAverage').textContent=avg===null?'—':avg.toFixed(2);$('finalAverage').style.color=won?'var(--mint)':'var(--red)';
+ $('resultDescription').textContent=`${avg===null?'남은 데이터가 없어요.':`최종 평균 ${avg.toFixed(2)} · 남은 데이터 ${objects.length}개`} 목표는 ${min}–${max}예요.${avg!==null&&!won&&avg.toFixed(2)>=min&&avg.toFixed(2)<=max?' 경계의 반올림 전 값이 목표 밖이에요.':''}`;
+ $('nextButton').textContent=won?`스테이지 ${stage+1} 도전 →`:'이 스테이지 다시 도전 →';$('pauseButton').disabled=true;renderItems();renderChart();renderTime();showOverlay('resultOverlay','nextButton');
+}
+function renderTime(){
+ $('timer').textContent=Math.max(0,remaining).toFixed(1);$('timer').classList.toggle('urgent',remaining<=3);
+ for(const o of objects)if(o.timer){const txt=Math.max(0,o.chain??o.bombTime).toFixed(1);if(o.timer.textContent!==txt)o.timer.textContent=txt;}
+ const effects=[];if(slowUntil>clock)effects.push(`⏳ ${Math.ceil(slowUntil-clock)}초`);if(explosiveUntil>clock)effects.push(`💣 폭발 터치 ${Math.ceil(explosiveUntil-clock)}초`);$('effect').textContent=effects.join(' · ');
+}
+function beginGift(){
+ const candidates=objects.filter(o=>o.type!=='normal');const target=candidates.length&&Math.random()<.85?candidates[Math.floor(Math.random()*candidates.length)]:null;
+ const el=document.createElement('div');el.className='gift-box';el.textContent='🎁';field.append(el);gift={el,x:target?.x??width*.5,y:target?.y??height*.5,age:0,target};giftAt=Infinity;
+}
+function tick(dt){
+ const slow=clock<slowUntil ? .15 : 1;const step=Math.min(dt,remaining/slow);clock+=step;const gameDt=step*slow;remaining=Math.max(0,remaining-gameDt);
+ refreshFrozen();
+ for(const o of [...objects]){
+  if(!objects.includes(o))continue;
+  if(o.type==='bomb'){
+   if(o.chain!==null){o.chain-=gameDt;if(o.chain<=0){explode({x:o.x,y:o.y},o);continue;}}
+   else if(!o.frozen){o.bombTime-=gameDt;if(o.bombTime<=0){explode({x:o.x,y:o.y},o);continue;}}
+  }
+  if(o.held||clock<o.organizedUntil)continue;
+  let move=false;
+  if(o.fling>0){o.x+=o.vx*gameDt;o.y+=o.vy*gameDt;const damping=Math.exp(-2.4*gameDt);o.vx*=damping;o.vy*=damping;o.fling-=gameDt;move=true;if(o.fling<=0){o.vx=(Math.random()-.5)*32;o.vy=(Math.random()-.5)*32;}}
+  else if(stage>=5&&o.type!=='normal'&&o.type!=='bomb'){const speed=Math.min(8,(stage-4)*.5)*(o.type==='ice'?.45:1);o.x+=o.vx*speed*gameDt;o.y+=o.vy*speed*gameDt;move=true;}
+  if(move){const x=o.x,y=o.y;confine(o);if(x!==o.x)o.vx=x<o.x?Math.abs(o.vx):-Math.abs(o.vx);if(y!==o.y)o.vy=y<o.y?Math.abs(o.vy):-Math.abs(o.vy);setPosition(o);}
+ }
+ // Do not spawn a new object at the exact end of a stage.
+ if(remaining<=.000001){finish();return;}
+ spawnElapsed+=gameDt;const interval=Math.max(.2,.8-stage*.06);
+ while(spawnElapsed>=interval){spawnElapsed-=interval;addObject(Math.random()>.4);}
+ if(clock>=giftAt&&!gift)beginGift();
+ if(gift){gift.age+=step;const p=clamp(gift.age/.72,0,1);const y=-40+(gift.y+40)*(p*p*(3-2*p));gift.el.style.transform=`translate(${gift.x-18}px,${y-18}px)`;if(p>=1){const g=gift;gift=null;if(objects.includes(g.target))remove(g.target);burst(g,true);grantItem(randomItem());g.el.remove();}}
+ fx=fx.filter(f=>{if(clock>=f.until){f.el.remove();return false;}return true;});
+ if(clock>=toastUntil)$('toast').hidden=true;
+}
+function frame(now){
+ const delta=(now-lastFrame)/1000;lastFrame=now;
+ if(phase==='running'){
+  if(delta>.5)pause('화면이 잠시 멈춰 자동으로 일시정지했어요. 준비되면 계속하세요.');
+  else {let rest=delta;while(rest>0&&phase==='running'){const step=Math.min(rest,1/60);tick(step);rest-=step;}uiElapsed+=delta;if(uiElapsed>=.08){uiElapsed=0;renderTime();}if(chartDirty)renderChart();}
+ }
+ requestAnimationFrame(frame);
+}
+function point(event){const r=field.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top};}
+function pick(p){
+ const hits=objects.filter(o=>!o.frozen&&Math.abs(p.x-o.x)<=o.size/2&&Math.abs(p.y-o.y)<=o.size/2);
+ // Prefer a visible icon over an overlapping object's invisible touch padding.
+ const core=hits.filter(o=>distance(o,p)<=o.size*.30);const list=core.length?core:hits;
+ return list.sort((a,b)=>LAYERS[b.type]-LAYERS[a.type]||distance(a,p)-distance(b,p)||b.id-a.id)[0]||null;
+}
+function sweep(from,to){
+ const dx=to.x-from.x,dy=to.y-from.y,lengthSq=dx*dx+dy*dy;
+ const hits=[];
+ for(const o of objects){if(o.frozen||pointer.visited.has(o.id))continue;const t=lengthSq?clamp(((o.x-from.x)*dx+(o.y-from.y)*dy)/lengthSq,0,1):0;const p={x:from.x+dx*t,y:from.y+dy*t};if(distance(o,p)<=Math.max(22,o.size*.43))hits.push({o,p,t});}
+ hits.sort((a,b)=>a.t-b.t);
+ for(const {o,p} of hits){if(pointer.visited.has(o.id))continue;if(o.type==='ice')hitIceGroup(o,p,distance(o,p)<=o.size*.3,pointer.visited);else{pointer.visited.add(o.id);hit(o,true);}}
+}
+field.addEventListener('pointerdown',event=>{
+ if(phase!=='running'||pointer||event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
+ event.preventDefault();refreshFrozen();const p=point(event);field.setPointerCapture(event.pointerId);
+ if(clock<explosiveUntil){pointer={id:event.pointerId,mode:'explosive'};explode(p);return;}
+ const obj=pick(p);pointer={id:event.pointerId,obj,start:p,last:p,dragging:false,core:obj?distance(obj,p)<=obj.size*.3:false,visited:new Set(),offset:obj?{x:obj.x-p.x,y:obj.y-p.y}:null};
+});
+field.addEventListener('pointermove',event=>{
+ if(phase!=='running'||!pointer||pointer.id!==event.pointerId||pointer.mode==='explosive')return;event.preventDefault();const p=point(event);
+ if(pointer.obj){const o=pointer.obj;if(!objects.includes(o)){resetPointer();return;}if(!pointer.dragging&&distance(pointer.start,p)>8){pointer.dragging=true;o.held=true;o.organizedUntil=0;o.el.classList.add('held');}if(pointer.dragging){o.x=p.x+pointer.offset.x;o.y=p.y+pointer.offset.y;confine(o);setPosition(o);refreshFrozen();}}
+ else sweep(pointer.last,p);
+ if(pointer)pointer.last=p;
+});
+field.addEventListener('pointerup',event=>{
+ if(!pointer||pointer.id!==event.pointerId)return;
+ const active=pointer;const p=point(event);const inside=p.x>=0&&p.y>=0&&p.x<=width&&p.y<=height;resetPointer();
+ if(phase!=='running'||active.mode==='explosive'||!inside)return;
+ if(active.obj){if(active.obj.type==='ice')hitIceGroup(active.obj,p,active.core);else hit(active.obj,true);}
+ else {pointer=active;sweep(active.last,p);pointer=null;}
+});
+// Cancellation is never a tap: browser gestures, rotation, and interruptions only release.
+field.addEventListener('pointercancel',event=>{if(pointer?.id===event.pointerId)resetPointer();});
+field.addEventListener('lostpointercapture',event=>{if(pointer?.id===event.pointerId)resetPointer();});
+field.addEventListener('contextmenu',event=>event.preventDefault());
+field.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&phase==='running'){const el=event.target.closest('.object');if(el){event.preventDefault();const o=objects.find(x=>x.el===el);if(o){if(clock<explosiveUntil)explode(o);else hit(o,true);}}}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause('앱을 전환해서 자동으로 멈췄어요. 준비되면 계속하세요.');});
+window.addEventListener('blur',()=>pause('다른 창으로 이동해서 멈췄어요. 준비되면 계속하세요.'));
+window.addEventListener('pagehide',()=>pause());
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'){event.preventDefault();if(!$('helpOverlay').hidden)closeHelp();else if(phase==='running')pause();else if(phase==='paused')resume();}
+ if(event.key==='Tab'){
+  const modal=[...document.querySelectorAll('.overlay')].find(el=>!el.hidden);if(!modal)return;const buttons=[...modal.querySelectorAll('button:not(:disabled)')];const first=buttons[0],last=buttons.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ }
+});
+$('startButton').onclick=newRun;$('pauseButton').onclick=()=>pause();$('resumeButton').onclick=resume;$('restartButton').onclick=()=>startStage(stage);$('homeButton').onclick=home;$('resultHome').onclick=home;$('nextButton').onclick=()=>startStage(won?stage+1:stage);
+$('helpButton').onclick=openHelp;$('startHelp').onclick=openHelp;$('closeHelp').onclick=closeHelp;
+document.querySelectorAll('[data-slot]').forEach(el=>el.onclick=()=>useItem(Number(el.dataset.slot)));
+resizeField();renderItems();showOverlay('startOverlay','startButton');lastFrame=performance.now();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
